@@ -27,3 +27,9 @@ EMBEDDING_DIM = int(_get("EMBEDDING_DIM", "1024"))
 
 # Atlas Vector Search index name (create this in Atlas UI)
 VECTOR_INDEX_NAME = _get("VECTOR_INDEX_NAME", "vector_index")
+
+# Optional proxy for youtube-transcript-api (needed on serverless / blocked IPs).
+# Either a full proxy URL, or Webshare username/password.
+YTT_PROXY = _get("YTT_PROXY")
+WEBSHARE_PROXY_USERNAME = _get("WEBSHARE_PROXY_USERNAME")
+WEBSHARE_PROXY_PASSWORD = _get("WEBSHARE_PROXY_PASSWORD")
