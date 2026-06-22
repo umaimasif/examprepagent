@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI Exam Prep Agent</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <header>
+    <h1>🎓 AI Exam Prep Agent</h1>
+    <p>Turn a YouTube lecture into notes, exam questions, a tutor, and a progress tracker.</p>
+  </header>
+
+  <main>
+    <!-- Step 1: input -->
+    <section class="card">
+      <h2>1. Process a lecture</h2>
+      <input id="url" placeholder="YouTube lecture URL" />
+      <input id="subject" placeholder="Subject (e.g. Machine Learning)" />
+      <textarea id="syllabus" placeholder="Optional: syllabus / topics list"></textarea>
+      <button id="process-btn">Generate notes &amp; questions</button>
+      <div id="process-status" class="status"></div>
+    </section>
+
+    <!-- Step 2: notes -->
+    <section class="card hidden" id="notes-card">
+      <h2>2. Smart notes</h2>
+      <div id="notes"></div>
+    </section>
+
+    <!-- Step 3: questions -->
+    <section class="card hidden" id="questions-card">
+      <h2>3. Exam questions</h2>
+      <div id="questions"></div>
+    </section>
+
+    <!-- Step 4: tutor -->
+    <section class="card hidden" id="tutor-card">
+      <h2>4. Ask the tutor</h2>
+      <p class="hint">Answers come only from this lecture (RAG).</p>
+      <input id="tutor-q" placeholder="e.g. Why is Logistic Regression better than Linear Regression?" />
+      <button id="tutor-btn">Ask</button>
+      <div id="tutor-answer"></div>
+    </section>
+
+    <!-- Step 5: quiz + progress -->
+    <section class="card hidden" id="quiz-card">
+      <h2>5. Quiz &amp; progress</h2>
+      <button id="quiz-btn">Start quiz</button>
+      <form id="quiz-form"></form>
+      <button id="submit-quiz-btn" class="hidden">Submit quiz</button>
+      <div id="quiz-result"></div>
+      <button id="progress-btn">View overall progress</button>
+      <div id="progress"></div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
