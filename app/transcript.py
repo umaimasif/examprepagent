@@ -42,9 +42,11 @@ def _proxies() -> Optional[dict]:
     if config.YTT_PROXY:
         return {"http": config.YTT_PROXY, "https": config.YTT_PROXY}
     if config.WEBSHARE_PROXY_USERNAME and config.WEBSHARE_PROXY_PASSWORD:
+        # The "-rotate" suffix gives a fresh residential IP per request,
+        # which is what dodges YouTube's datacenter-IP blocking.
         user = config.WEBSHARE_PROXY_USERNAME
         pwd = config.WEBSHARE_PROXY_PASSWORD
-        url = f"http://{user}:{pwd}@p.webshare.io:80"
+        url = f"http://{user}-rotate:{pwd}@p.webshare.io:80"
         return {"http": url, "https": url}
     return None
 
