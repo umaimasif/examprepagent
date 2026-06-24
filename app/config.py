@@ -33,3 +33,7 @@ VECTOR_INDEX_NAME = _get("VECTOR_INDEX_NAME", "vector_index")
 YTT_PROXY = _get("YTT_PROXY")
 WEBSHARE_PROXY_USERNAME = _get("WEBSHARE_PROXY_USERNAME")
 WEBSHARE_PROXY_PASSWORD = _get("WEBSHARE_PROXY_PASSWORD")
+
+# Supadata transcript API (free tier). Works from serverless because it fetches
+# YouTube server-side, bypassing the datacenter-IP block. https://supadata.ai
+SUPADATA_API_KEY = _get("SUPADATA_API_KEY")

@@ -14,8 +14,10 @@ serverless because the filesystem is read-only and ffmpeg is unavailable.
 """
 import os
 import re
+import time
 from typing import Optional
 
+import httpx
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import (
     NoTranscriptFound,
@@ -59,10 +61,65 @@ def _api() -> YouTubeTranscriptApi:
     return YouTubeTranscriptApi()
 
 
+SUPADATA_BASE = "https://api.supadata.ai/v1"
+
+
+def _supadata_transcript(url: str, lang: str = "en") -> str:
+    """Fetch transcript via Supadata (server-side, bypasses datacenter-IP block)."""
+    headers = {"x-api-key": config.SUPADATA_API_KEY}
+    params = {"url": url, "text": "true", "lang": lang}
+    with httpx.Client(timeout=120) as http:
+        r = http.get(
+            f"{SUPADATA_BASE}/youtube/transcript", params=params, headers=headers
+        )
+        r.raise_for_status()
+        data = r.json()
+        # Long videos return a job id to poll.
+        if "content" not in data and data.get("jobId"):
+            return _supadata_poll(http, data["jobId"], headers)
+    content = data.get("content")
+    if not content:
+        raise RuntimeError("Supadata returned no transcript content")
+    return content if isinstance(content, str) else _join_chunks(content)
+
+
+def _supadata_poll(http: "httpx.Client", job_id: str, headers: dict) -> str:
+    for _ in range(30):
+        time.sleep(2)
+        r = http.get(f"{SUPADATA_BASE}/transcript/{job_id}", headers=headers)
+        r.raise_for_status()
+        data = r.json()
+        status = data.get("status")
+        if status == "completed":
+            content = data.get("content")
+            return content if isinstance(content, str) else _join_chunks(content)
+        if status == "failed":
+            raise RuntimeError("Supadata transcript job failed")
+    raise RuntimeError("Supadata transcript job timed out")
+
+
+def _join_chunks(chunks) -> str:
+    return " ".join(c.get("text", "").strip() for c in chunks).strip()
+
+
 def get_transcript(url: str, languages: Optional[list] = None) -> str:
-    """Return the full transcript text for a YouTube URL."""
+    """Return the full transcript text for a YouTube URL.
+
+    Order: Supadata (works on serverless) -> youtube-transcript-api (local).
+    """
     video_id = extract_video_id(url)
     langs = languages or ["en", "en-US", "en-GB"]
+
+    if config.SUPADATA_API_KEY:
+        try:
+            return _supadata_transcript(url, lang=langs[0])
+        except Exception as e:
+            # Fall through to the library path (useful locally / if quota hit).
+            if _IS_SERVERLESS:
+                raise RuntimeError(
+                    f"Supadata transcript failed: {type(e).__name__}: {str(e)[:160]}"
+                )
+
     ytt = _api()
     try:
         fetched = ytt.fetch(video_id, languages=langs)
